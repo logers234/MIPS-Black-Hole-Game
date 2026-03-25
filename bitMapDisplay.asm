@@ -1,3 +1,19 @@
+#Author: Logan Gwin
+#Date: 3/24/2026
+#Description: 
+#	This program will render the game board of "Black Hole" by taking
+#	the game array and decoding the player data of each tile to get the number and the
+#	color of the number in the process in order to draw the tile to the screen.
+#
+#Bitmap Usage:
+#	In order for the board to display properly, the following settings need to be applied to the bitmap display:
+#
+#	Unit Width in Pixels: 1	
+#	Unit Height in Pixels: 1
+#	Display Width in Pixels: 512
+#	Display Height in Pixels: 512
+#	Base Address for display: 0x10040000 (heap)
+
 .data
 #Number fonts
 font_hole: .byte 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
@@ -45,7 +61,7 @@ end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23
 main:
 	#Fill board with white pixels and draw background
 	#jal fill_board
-    	jal draw_board
+    	#jal draw_board
     	
     	#Render midgame array
     	la $a0, mid_arr
@@ -71,6 +87,10 @@ main:
 #Parameters: a0 = game array, a1 = array size
 #Return: N/A
 draw_hole:
+	#Store ra to stack
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
 	#Setup counters: t0 = x, t1 = array address
 	li $t0, 0
 	move $t1, $a0
@@ -100,7 +120,10 @@ found_zero:
 	
 	#Update board
 	jal update_board
-
+	
+	#Restore ra from stack
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 exit:
 	#Return to caller
 	jr $ra
