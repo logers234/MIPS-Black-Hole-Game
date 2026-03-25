@@ -26,6 +26,7 @@ font_table:
 	.word font_8    # Index 8
 	.word font_9    # Index 9
 	.word font_10   # Index 10
+	.word font_hole # Index 11
 
 #Colors
 tile_background: .word 0x00909090 #Grey
@@ -37,25 +38,76 @@ game_dimensions: .word 512 #Board is 512 x 512
 pixel_dimensions: .word 64 #Pixel is 64 x 64
 
 #Test array
-arr1: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
+mid_arr: .byte 36, 0, 0, 21, 19, 20, 0, 35, 0, 0, 26, 38, 0, 0, 39, 41, 23, 0, 42, 0, 25
+end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
 
 .text
 main:
-	#Fill board with white pixels
-	jal fill_board
-    	
+	#Fill board with white pixels and draw background
+	#jal fill_board
     	jal draw_board
     	
-	#Render board from array
-	la $a0, arr1
+    	#Render midgame array
+    	la $a0, mid_arr
+	li $a1, 21
+	#jal update_board
+	
+	#Render endgame array
+	la $a0, end_arr
 	li $a1, 21
 	jal update_board
+    	
+    	#Draw hole
+    	la $a0, end_arr
+    	li $a1, 21
+    	jal draw_hole
     	
 	# End program
 	li $v0, 10
 	syscall
 
 
+
+#Parameters: a0 = game array, a1 = array size
+#Return: N/A
+draw_hole:
+	#Setup counters: t0 = x, t1 = array address
+	li $t0, 0
+	move $t1, $a0
+	
+search_for_zero:
+	#Get byte at index x
+	lb $t3, 0($t1)
+	
+	#Branch if x($t2) = 0
+	beq $t3, $zero, found_zero
+	#Else, if x = array length, branch
+	beq $t0, $a1, exit
+	
+	#Else, increment address by 1 and x by 1
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	
+	#Go to next iteration
+	j search_for_zero
+	
+found_zero:
+	#Set zero position to 11 in the array with player 2 color
+	li $t4, 43
+	
+	#Store value
+	sb $t4, 0($t1)
+	
+	#Update board
+	jal update_board
+
+exit:
+	#Return to caller
+	jr $ra
+	
+	
+	
+	
 #Parameters: a0 = game array, a1 = element index
 #Return: v0 = player number, v1 = player value
 get_player_data:
@@ -75,6 +127,7 @@ get_player_data:
 	
 	
 #Parameters: a0 = game array, a1 = array size
+#Return: N/A
 update_board:
 	# Store ra, s0-s7 to the stack
 	addi $sp, $sp, -36
@@ -123,7 +176,7 @@ color_set:
 	
 	#Draw number if valid (1-10) (v1 = num value)
 	beq $v1, $zero, skip_num
-	bge $v1, 11, skip_num
+	bge $v1, 12, skip_num
 
 	#Get font address from table [(num * 4) + font table address]
 	la $t0, font_table
@@ -179,6 +232,7 @@ cleanup:
 
 		
 #Parameters: N/A
+#Return: N/A
 draw_board:
 	# Store ra, s0-s7 to the stack
 	addi $sp, $sp, -36
@@ -285,6 +339,7 @@ fill_board:
 
 
 #Parameters: $a0 = x (tile index), $a1 = y (tile index)
+#Return: N/A
 draw_tile:
 	#Store s0 and s1 to stack
 	addi $sp, $sp, -8
@@ -371,6 +426,7 @@ paint_pixel:
 
 		
 #Parameters: $a0 = x (tile index), $a1 = y (tile index), $a2 = color, $a3 = font_address
+#Return: N/A
 draw_number:
 	# Save ra, s0, s1, and s2 on the stack
 	addi $sp, $sp, -16
@@ -453,6 +509,7 @@ default_color:
 
 
 #Parameters: t5 = address to draw chunk, a2 = color of chunk
+#Return: N/A
 draw_chunk:
 	li $t6, 0              # y_counter
 	move $t7, $t5          # current_address
