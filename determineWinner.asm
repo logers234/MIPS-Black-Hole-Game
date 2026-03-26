@@ -6,8 +6,6 @@
 #	them in the process to determine which player owns them and adding them to their
 #	running total.
 
-.include "SysCalls.asm"
-
 .data
 
 # First 4 LSB's hold the values 0-15, the 4 MSB's hold the player the value belongs to
@@ -23,7 +21,6 @@ score1_message: .asciiz "Player 1 score: "
 score2_message: .asciiz "Player 2 score: "
 
 space: .asciiz " "
-newline: .asciiz "\n"
 
 .text
 

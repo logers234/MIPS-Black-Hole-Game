@@ -58,32 +58,6 @@ mid_arr: .byte 36, 0, 0, 21, 19, 20, 0, 35, 0, 0, 26, 38, 0, 0, 39, 41, 23, 0, 4
 end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
 
 .text
-main:
-	#Fill board with white pixels and draw background
-	#jal fill_board
-    	#jal draw_board
-    	
-    	#Render midgame array
-    	la $a0, mid_arr
-	li $a1, 21
-	#jal update_board
-	
-	#Render endgame array
-	la $a0, end_arr
-	li $a1, 21
-	jal update_board
-    	
-    	#Draw hole
-    	la $a0, end_arr
-    	li $a1, 21
-    	jal draw_hole
-    	
-	# End program
-	li $v0, 10
-	syscall
-
-
-
 #Parameters: a0 = game array, a1 = array size
 #Return: N/A
 draw_hole:
