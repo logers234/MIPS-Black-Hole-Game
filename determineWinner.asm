@@ -10,7 +10,7 @@
 
 # First 4 LSB's hold the values 0-15, the 4 MSB's hold the player the value belongs to
 #Example: Tile that player 1 owns with a value of 9 = 0001 1001 or 9 + 16 = 25
-arr1: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
+arr1: .byte 42, 20, 41, 24, 36, 21, 37, 11, 25, 19, 38, 21, 33, 17, 35, 39, 26, 22, 34, 18, 40
 arr2: .byte 0, 17, 33, 18, 0, 34, 19, 35, 20, 36
 
 player_1_win: .asciiz "Player 1 wins!\n"
@@ -21,15 +21,11 @@ score1_message: .asciiz "Player 1 score: "
 score2_message: .asciiz "Player 2 score: "
 
 space: .asciiz " "
+newline: .asciiz "\n"
 
 .text
-
-# Arguemnt a0 will be the array address
 la $a0, arr1
-# Arguement a1 will be the hole  position in the array
-#For arr1, pos = 8; For arr2, pos = 4
-li $a1, 8
-# Arguement a2 is the size of the array
+li $a1, 7
 li $a2, 21
 
 determineWinner:
@@ -110,6 +106,7 @@ determineWinner:
 		
 		#Reset address and calculate the side hole n-1
 		move $t4, $s0
+		add $t4, $t4, $s1
 		subi $t4, $t4, 1
 		jal decodeTile
 		
@@ -147,7 +144,7 @@ determineWinner:
 		
 		#Branch to finish if the hole pos == beginning index of row (no tiles beneath it)
 		#Beginning index of row = n(n-1)/2 where n = row
-		subi $t5, $t5, 1
+		subi $t5, $t1, 1
 		mul $t5, $t5, $t1
 		div $t5, $t5, 2
 		

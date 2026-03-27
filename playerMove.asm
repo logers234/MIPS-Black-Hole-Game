@@ -7,6 +7,7 @@ player_move_num: .asciiz "Number for move: "
 player_move_invalid: .asciiz "Invalid move! Please enter a valid set of coordinates and ensure the tile is empty.\n"
 player_number_invalid: .asciiz "You have already used this number! Please enter a number between 1 - 10 that you haven't used yet.\n"
 
+#Store the moves that the player has already made
 number_moves: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 .text
 #Arguements: a0 = game array
@@ -32,11 +33,6 @@ read_coordinates:
 	syscall
 	move $t0, $v0
 	
-	#Print newline
-	li $v0, SysPrintString
-	la $a0, newline
-	syscall
-	
 	#Tell player to input y coordinate
 	li $v0, SysPrintString
 	la $a0, player_move_y
@@ -46,11 +42,6 @@ read_coordinates:
 	li $v0, SysReadInt
 	syscall
 	move $t1, $v0
-	
-	#Print newline
-	li $v0, SysPrintString
-	la $a0, newline
-	syscall
 	
 	#If x is greater than y, then the move is invalid and must be re-entered
 	#Otherwise, check the array to see if the position is occupied
@@ -105,11 +96,6 @@ read_number:
 	li $v0, SysReadInt
 	syscall
 	move $t2, $v0
-	
-	#Print newline
-	li $v0, SysPrintString
-	la $a0, newline
-	syscall
 	
 	#Validate number (Should be in range of 1 <= n <= 10)
 	bgt $t2, 10, invalid_number

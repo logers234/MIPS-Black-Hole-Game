@@ -59,7 +59,7 @@ end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23
 
 .text
 #Parameters: a0 = game array, a1 = array size
-#Return: N/A
+#Return: v0 = hole index
 draw_hole:
 	#Store ra to stack
 	addi $sp, $sp, -4
