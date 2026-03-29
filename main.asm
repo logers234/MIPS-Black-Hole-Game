@@ -18,7 +18,7 @@ main:
     	li $s0, 0
     	li $s1, 21
     	
-    	#j main_exit
+    	#j sys_exit
 main_loop:
 	
 	#Player 1 move
@@ -63,7 +63,7 @@ main_exit:
     	la $a0, game_arr
     	li $a1, 21
     	jal draw_hole
-    	
+
 	# End program
 	li $v0, SysExit
 	syscall

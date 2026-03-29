@@ -43,6 +43,10 @@ font_table:
 	.word font_9    # Index 9
 	.word font_10   # Index 10
 	.word font_hole # Index 11
+	
+#Halfword array for the tile layout
+.align 1
+tile_layout: .half 0xFFFF, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0x8001, 0xFFFF
 
 #Colors
 tile_background: .word 0x00909090 #Grey
@@ -355,93 +359,99 @@ fill_board:
 
 
 
+		
 #Parameters: $a0 = x (tile index), $a1 = y (tile index)
 #Return: N/A
 draw_tile:
-	#Store s0 and s1 to stack
-	addi $sp, $sp, -8
-	sw $s0, 0($sp)
-	sw $s1, 4($sp)
-	
-	#Check what row the tile is on, if y is even, offset by 32 pixels
-	andi $t2, $a1, 1
-	
-	#Convert tile indices to pixel coordinates (64x64 chunks)
-	sll $a0, $a0, 6		#a0 = x * 64
-	sll $a1, $a1, 6		#a1 = y * 64
-    
-	#Calculate Start Address in $t1
-	li $t0, 512              # Screen Width
-	mul $t1, $a1, $t0        # y * 512
-	add $t1, $t1, $a0        # (y * 512) + x
-	sll $t1, $t1, 2          # Multiply by 4 for bytes
-	add $t1, $t1, 0x10040000 # Add Base Address
-	
-	#Add 128 offset to address if y is even (32 * 4 for bytes)
-	beq $t2, 1, skip_offset
-	addi $t1, $t1, 128
+	# Save ra, s0, s1, and s2 on the stack
+	addi $sp, $sp, -20
+	sw $ra, 0($sp)
+	sw $s0, 4($sp)
+	sw $s1, 8($sp)
+	sw $s2, 12($sp)
+	sw $s3, 16($sp)
+
+	# Convert tile indices to pixel coordinates (64x64 chunks)
+	sll $s0, $a0, 6        # s0 = x_pixel
+	sll $s1, $a1, 6        # s1 = y_pixel
+    	
+    	#Store colors in s2 and s3
+    	la $s2, tile_border
+    	lw $s2, 0($s2)
+    	
+    	la $s3, tile_background
+    	lw $s3, 0($s3)
+    	
+    	#a3 = tile bit layout array
+    	la $a3, tile_layout
+    	
+	# Check if the row is even (y % 2 == 0)
+	andi $t6, $a1, 1
+	beq  $t6, 1, skip_offset
+    	
+    	# If even, offset X by 32 pixels
+	addi $s0, $s0, 32      
 	
 skip_offset:
-	#Pre-load colors into registers
-	la $t8, tile_border
-	lw $s0, 0($t8)           # $s0 = Border Color
-	la $t8, tile_background
-	lw $s1, 0($t8)           # $s1 = Background Color
 
-	#Setup Loop Counters
-	li $t2, 0                # Counter y = 0
-	li $t4, 1792             # Skip: (512 - 64) * 4
-
-outer_tile_loop:
-	li $t3, 0                # Counter x = 0
-
-inner_tile_loop:
-	#Determine color for this pixel
-	#Check Y-Border: if (y < 4 || y >= 60)
-	slti $t6, $t2, 4
-	sge  $t7, $t2, 60
-	or   $t6, $t6, $t7       #$t6 is 1 if y is on the border
+	li $t0, 0              # Row counter (0-15)
     
-	#Check X-Border: if (x < 4 || x >= 60)
-	slti $t8, $t3, 4
-	sge  $t9, $t3, 60
-	or   $t8, $t8, $t9       #$t8 is 1 if x is on the border
-    
-	#Combine: if (Y-Border OR X-Border)
-	or   $t6, $t6, $t8
-    
-	#Choose color
-	beq  $t6, $zero, paint_bg
-	move $t5, $s0            #Use Border color
-	j paint_pixel
+draw_tile_loop:
+	lh $t1, 0($a3)          # Load tile row halfword
+	li $t2, 0               # Column counter (0-15)
+	li $t3, 0x8000          # Mask
 
-paint_bg:
-	move $t5, $s1            #Use Background color
-
-paint_pixel:
-	sw $t5, 0($t1)           #Draw to memory
-	addi $t1, $t1, 4         #Move pointer
+tile_bit_loop:
+	# Calculate Address for the 4x4 block
+	sll $t7, $t0, 2         # row * 4
+	add $t7, $t7, $s1       # + y_pixel_start
     
-	addi $t3, $t3, 1         #x++
-	blt $t3, 64, inner_tile_loop
+	sll $t8, $t2, 2         # col * 4
+	add $t8, $t8, $s0       # + x_pixel_start
 
-	#End of row: Add skip to jump to next screen line
-	add $t1, $t1, $t4        
-    
-	addi $t2, $t2, 1         #y++
-	blt $t2, 64, outer_tile_loop
+	sll $t9, $t7, 9         # y * 512
+	add $t9, $t9, $t8       # + x
+	sll $t9, $t9, 2         # * 4
+	addi $t5, $t9, 0x10040000 # Base
+    	
+    	#Preload the tile background color if the mask doesn't line up
+    	move $a2, $s3
+    	
+    	#Check if the bit in the mask and the font data line up
+	and $t4, $t1, $t3
+	beq $t4, $zero, background_color
+	
+	#Change color to border color if mask lines up
+	move $a2, $s2
+	
+background_color:
+	# Draw the chunk
+	jal draw_chunk
+
+	# Shift the mask over, increment the column
+	srl $t3, $t3, 1
+	addi $t2, $t2, 1
+	blt $t2, 16, tile_bit_loop
+	
+	# Increment row by 1 and move to the next halfword in the tile
+	addi $a3, $a3, 2
+	addi $t0, $t0, 1
+	blt $t0, 16, draw_tile_loop
 	
 	#Restore s0 and s1 from stack
-	lw $s0, 0($sp)
-	lw $s1, 4($sp)
-	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	lw $s0, 4($sp)
+	lw $s1, 8($sp)
+	lw $s2, 12($sp)
+	lw $s3, 16($sp)
+	addi $sp, $sp, 20
 	
 	#Return to caller
-	jr $ra
-	
+	jr $ra	
 	
 
-		
+
+				
 #Parameters: $a0 = x (tile index), $a1 = y (tile index), $a2 = color, $a3 = font_address
 #Return: N/A
 draw_number:
