@@ -13,12 +13,11 @@
 arr1: .byte 42, 20, 41, 24, 36, 21, 37, 11, 25, 19, 38, 21, 33, 17, 35, 39, 26, 22, 34, 18, 40
 arr2: .byte 0, 17, 33, 18, 0, 34, 19, 35, 20, 36
 
-player_1_win: .asciiz "Player 1 wins!\n"
-player_2_win: .asciiz "Player 2 wins!\n"
+player_1_win: .asciiz "Computer wins! Better luck next time!\n"
+player_2_win: .asciiz "Player wins! Congratulations!\n"
 
-input_message: .asciiz "Input Array:\n"
-score1_message: .asciiz "Player 1 score: "
-score2_message: .asciiz "Player 2 score: "
+score1_message: .asciiz "Computer score: "
+score2_message: .asciiz "Player score: "
 
 space: .asciiz " "
 newline: .asciiz "\n"
@@ -229,43 +228,13 @@ determineWinner:
 			jr $ra
 
 	Finish:
-		#Print input message
-		li $v0, SysPrintString
-		la $a0, input_message
-		syscall
 		
-		#Copy array address
-		move $t4, $s0
-		move $t3, $zero
-		
-		printArray:
-			li $v0, SysPrintInt
-			#Get byte at pos, get tile value
-			lb $a0, 0($t4)
-			andi $a0, $a0, 0x0F
-			syscall
-			
-			li $v0, SysPrintString
-			la $a0, space
-			syscall
-			
-			#Increment the address and counter by 1
-			addi $t4, $t4, 1
-			addi $t3, $t3, 1
-			
-			#Check if the current iteration is greater than or equal to the size of the array
-			blt $t3, $s5, printArray
-		#Print newline
-		li $v0, SysPrintString
-		la $a0, newline
-		syscall
-		
-		#Print player 1 score msg
+		#Print computer score msg
 		li $v0, SysPrintString
 		la $a0, score1_message
 		syscall
 		
-		#Print player 1 score
+		#Print computer score
 		li $v0, SysPrintInt
 		move $a0, $s2
 		syscall
@@ -275,12 +244,12 @@ determineWinner:
 		la $a0, newline
 		syscall
 		
-		#Print player 2 score msg
+		#Print player score msg
 		li $v0, SysPrintString
 		la $a0, score2_message
 		syscall
 		
-		#Print player 2 score
+		#Print player score
 		li $v0, SysPrintInt
 		move $a0, $s3
 		syscall
@@ -291,11 +260,11 @@ determineWinner:
 		syscall
 		
 		#Compare scores
-		#If s3 > s2, Player 1 wins
+		#If s3 > s2, computer wins
 		slt $t5, $s2, $s3
 		bne $t5, $zero, P1Wins
 		
-		#If not, Player 2 wins
+		#If not, player wins
 		li $v0, SysPrintString
 		la $a0, player_2_win
 		syscall
@@ -319,9 +288,6 @@ determineWinner:
     		lw $s5, 20($sp)
     		lw $ra, 24($sp)
     		addi $sp, $sp, 28
-    		#Jump to caller (commented out for Assigment 4 to prevent error)
-    		#jr $ra
     		
-    		# Terminate program (Overwrites player won value, will not be here in term project)
-    		li $v0, SysExit
-    		syscall
+    		#Jump to caller
+		jr $ra

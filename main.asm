@@ -47,42 +47,7 @@ main_loop:
     	j main_loop
 
 main_exit:
-		
-		#Render array
-		la $a0, game_arr
-		move $a1, $s1
-		jal update_board
-		
-		#Print input message
-		li $v0, SysPrintString
-		la $a0, input_message
-		syscall
-		
-		#Copy array address
-		la $t4, game_arr
-		move $t3, $zero
-		
-		printArray1:
-			li $v0, SysPrintInt
-			#Get byte at pos, get tile value
-			lb $a0, 0($t4)
-			syscall
-			
-			li $v0, SysPrintString
-			la $a0, space1
-			syscall
-			
-			#Increment the address and counter by 1
-			addi $t4, $t4, 1
-			addi $t3, $t3, 1
-			
-			#Check if the current iteration is greater than or equal to the size of the array
-			blt $t3, $s1, printArray1
-		#Print newline
-		li $v0, SysPrintString
-		la $a0, newline1
-		syscall
-	
+
 	#Get hole pos
 	la $a0, game_arr
 	move $a1, $s1
