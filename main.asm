@@ -12,7 +12,7 @@ game_arr1: .byte 42, 20, 41, 24, 36, 21, 37, 0, 25, 19, 38, 21, 33, 17, 35, 39, 
 main:
 	#Fill board with white pixels and draw background
 	#jal fill_board
-    	jal draw_board
+    	#jal draw_board
     	
     	#x = 0, s1 = game array length
     	li $s0, 0

@@ -1,11 +1,12 @@
 .data
 
-player_move: .asciiz "Player 2, make your move\n"
+player_move: .asciiz "Player, make your move!\n"
 player_move_x: .asciiz "X-coordinate for move: "
 player_move_y: .asciiz "Y-coordinate for move: "
 player_move_num: .asciiz "Number for move: "
 player_move_invalid: .asciiz "Invalid move! Please enter a valid set of coordinates and ensure the tile is empty.\n"
 player_number_invalid: .asciiz "You have already used this number! Please enter a number between 1 - 10 that you haven't used yet.\n"
+player_newline: .asciiz "\n"
 
 #Store the moves that the player has already made
 number_moves: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -96,6 +97,11 @@ read_number:
 	li $v0, SysReadInt
 	syscall
 	move $t2, $v0
+	
+	#Print newline
+	li $v0, SysPrintString
+	la $a0, player_newline
+	syscall
 	
 	#Validate number (Should be in range of 1 <= n <= 10)
 	bgt $t2, 10, invalid_number

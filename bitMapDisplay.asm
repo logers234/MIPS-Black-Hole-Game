@@ -57,6 +57,10 @@ pixel_dimensions: .word 64 #Pixel is 64 x 64
 mid_arr: .byte 36, 0, 0, 21, 19, 20, 0, 35, 0, 0, 26, 38, 0, 0, 39, 41, 23, 0, 42, 0, 25
 end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
 
+#Buffer array, stores the game board from previous move
+#Used to skip over numbers that have already been drawn
+buffer: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
 .text
 #Parameters: a0 = game array, a1 = array size
 #Return: v0 = hole index
@@ -126,6 +130,7 @@ get_player_data:
 #Parameters: a0 = game array, a1 = array size
 #Return: N/A
 update_board:
+
 	# Store ra, s0-s7 to the stack
 	addi $sp, $sp, -36
 	sw $ra, 0($sp)
@@ -153,6 +158,13 @@ outer_render_loop:
 	move $s7, $s3		#Temporary X to increment across the row
 
 inner_render_loop:
+	
+	#Check if the number has already been drawn
+	la $t3, buffer
+	add $t4, $t3, $s5
+	lb $t3, 0($t4)
+	bne $t3, $zero, skip_num
+	
 	#Extract player data (v0 = player num, v1 = tile val)
 	move $a0, $s0
 	move $a1, $s5
@@ -162,7 +174,6 @@ inner_render_loop:
 	li $a2, 0x00000000	# Default: Black (Player 2)
 	bne $v0, 1, color_set
 	li $a2, 0x00FF0000	# Set Red (Player 1)
-	
 	
 color_set:
 
@@ -185,8 +196,15 @@ color_set:
 	move $a0, $s7
 	move $a1, $s2
 	jal draw_number
+	
+	#Add the pos to the buffer so it can be skipped next update
+	la $t3, buffer
+	add $t4, $t3, $s5
+	li $t0, 1
+	sb $t0, 0($t4)
 
 skip_num:
+
 	addi $s7, $s7, 1		#Move to next tile column
 	addi $s5, $s5, 1		#Increment total elements processed
 	addi $s6, $s6, 1		#Increment row element counter
@@ -204,12 +222,14 @@ skip_num:
 	addi $s3, $s3, -1		#Adjust pyramid center left
 
 check_exit:
+
 	#Exit if we processed all elements (21) or row count is too high [6 (row amount) + 2 (row offset) = 7 (final row)]
 	li $t0, 8
 	bge $s2, $t0, cleanup
 	blt $s5, $s1, outer_render_loop
 
 cleanup:
+
 	#Restore ra, s0-s7 from the stack
 	lw $ra, 0($sp)
 	lw $s0, 4($sp)
