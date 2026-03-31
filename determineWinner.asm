@@ -8,25 +8,15 @@
 
 .data
 
-# First 4 LSB's hold the values 0-15, the 4 MSB's hold the player the value belongs to
-#Example: Tile that player 1 owns with a value of 9 = 0001 1001 or 9 + 16 = 25
-arr1: .byte 42, 20, 41, 24, 36, 21, 37, 11, 25, 19, 38, 21, 33, 17, 35, 39, 26, 22, 34, 18, 40
-arr2: .byte 0, 17, 33, 18, 0, 34, 19, 35, 20, 36
-
 player_1_win: .asciiz "Computer wins! Better luck next time!\n"
 player_2_win: .asciiz "Player wins! Congratulations!\n"
 
 score1_message: .asciiz "Computer score: "
 score2_message: .asciiz "Player score: "
 
-space: .asciiz " "
 newline: .asciiz "\n"
 
 .text
-la $a0, arr1
-li $a1, 7
-li $a2, 21
-
 determineWinner:
 	#Acquire s0-s5/ra and store them to stack
 	addi $sp, $sp, -28

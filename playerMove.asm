@@ -1,11 +1,9 @@
 .data
 
-player_move: .asciiz "Player, make your move!\n"
+player_move: .asciiz "Player, make your move! Number being played: "
 player_move_x: .asciiz "X-coordinate for move: "
 player_move_y: .asciiz "Y-coordinate for move: "
-player_move_num: .asciiz "Number for move: "
 player_move_invalid: .asciiz "Invalid move! Please enter a valid set of coordinates and ensure the tile is empty.\n"
-player_number_invalid: .asciiz "You have already used this number! Please enter a number between 1 - 10 that you haven't used yet.\n"
 player_newline: .asciiz "\n"
 
 .text
@@ -19,7 +17,17 @@ playerMove:
 	li $v0, SysPrintString
 	la $a0, player_move
 	syscall
-
+	
+	#Print the current number being played
+	li $v0, SysPrintInt
+	move $a0, $a1
+	syscall
+	
+	#Print newline
+	li $v0, SysPrintString
+	la $a0, player_newline
+	syscall
+	
 read_coordinates:
 
 	#Tell player to input x coordinate
@@ -41,6 +49,11 @@ read_coordinates:
 	li $v0, SysReadInt
 	syscall
 	move $t1, $v0
+	
+	#Print newline
+	li $v0, SysPrintString
+	la $a0, player_newline
+	syscall
 	
 	#If x is greater than y, then the move is invalid and must be re-entered
 	#Otherwise, check the array to see if the position is occupied

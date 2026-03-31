@@ -57,10 +57,6 @@ game_background: .word 0x00FFFFFF #White
 game_dimensions: .word 512 #Board is 512 x 512
 pixel_dimensions: .word 64 #Pixel is 64 x 64
 
-#Test array
-mid_arr: .byte 36, 0, 0, 21, 19, 20, 0, 35, 0, 0, 26, 38, 0, 0, 39, 41, 23, 0, 42, 0, 25
-end_arr: .byte 36, 17, 34, 21, 19, 20, 18, 35, 0, 33, 26, 38, 37, 22, 39, 41, 23, 40, 42, 24, 25
-
 #Buffer array, stores the game board from previous move
 #Used to skip over numbers that have already been drawn
 buffer: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

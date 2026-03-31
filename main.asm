@@ -2,17 +2,51 @@
 
 .data
 
-newline1: .asciiz "\n"
-space1: .asciiz " "
+intro_message1: .asciiz "Welcome to Black Hole! To play this game, you must play numbers in ascending order from 1-10 onto the game board using (x,y) coordinates.\n"
+intro_message2: .asciiz "The y coordinate respresents how far down from the top you want to play your number at (y starts at 1 and ends at 6) and the x coordinate\n"
+intro_message3: .asciiz "represents how far from the left edge you want to play in that row (x is less than or equal to your y number). When 20 total moves are made\n"
+intro_message4: .asciiz "by the computer and player, a hole is placed where the last empty tile is. The goal is to have the least value of numbers surrounding the hole.\nGood luck!\n\n"
+loading_message: .asciiz "Game board is being drawn, Please wait.\n"
+loaded_message: .asciiz "Game board drawn, have fun!\n\n"
 
 game_arr: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 game_arr_length: .byte 21
-game_arr1: .byte 33, 34, 35, 26, 18, 21, 41, 23, 22, 25, 24, 42, 19, 39, 0, 36, 37, 20, 40, 17, 38
+
 .text
 main:
+	#Print intro message 1
+	li $v0, SysPrintString
+	la $a0, intro_message1
+	syscall
+	
+	#Print intro message 2
+	li $v0, SysPrintString
+	la $a0, intro_message2
+	syscall
+	
+	#Print intro message 3
+	li $v0, SysPrintString
+	la $a0, intro_message3
+	syscall
+	
+	#Print intro message 4
+	li $v0, SysPrintString
+	la $a0, intro_message4
+	syscall
+	
+	#Notify user that game board is being drawn
+	li $v0, SysPrintString
+	la $a0, loading_message
+	syscall
+	
 	#Fill board with white pixels and draw background
 	#jal fill_board
     	jal draw_board
+    	
+    	#Notify user that board is finished being drawn
+	li $v0, SysPrintString
+	la $a0, loaded_message
+	syscall
     	
     	#x = 1, s1 = game array length
     	li $s0, 1
