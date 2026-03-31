@@ -110,7 +110,7 @@ determineWinner:
 		jal decodeTile
 		
 		#Branch to finish if the hole pos == array size (no tiles beneath it)
-		bne $s1, $s5, Finish
+		beq $s1, $s5, Finish
 		
 		#Reset address
 		move $t4, $s0
@@ -147,7 +147,7 @@ determineWinner:
 		mul $t5, $t5, $t1
 		div $t5, $t5, 2
 		
-		bne $s1, $t5, Finish
+		beq $s1, $t5, Finish
 		
 		#Reset address
 		move $t4, $s0

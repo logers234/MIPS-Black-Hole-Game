@@ -7,47 +7,50 @@ space1: .asciiz " "
 
 game_arr: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 game_arr_length: .byte 21
-game_arr1: .byte 42, 20, 41, 24, 36, 21, 37, 0, 25, 19, 38, 21, 33, 17, 35, 39, 26, 22, 34, 18, 40
+game_arr1: .byte 33, 34, 35, 26, 18, 21, 41, 23, 22, 25, 24, 42, 19, 39, 0, 36, 37, 20, 40, 17, 38
 .text
 main:
 	#Fill board with white pixels and draw background
 	#jal fill_board
-    	#jal draw_board
+    	jal draw_board
     	
-    	#x = 0, s1 = game array length
-    	li $s0, 0
+    	#x = 1, s1 = game array length
+    	li $s0, 1
     	li $s1, 21
     	
-    	#j sys_exit
 main_loop:
 	
-	#Player 1 move
+	#Computer move
 	la $a0, game_arr
 	move $a1, $s1
+	move $a2, $s0
 	jal computerMove
 	
-	#Render array
+	#Render board
 	la $a0, game_arr
 	move $a1, $s1
 	jal update_board
 	
-	#Player 2 move
+	#Player move
 	la $a0, game_arr
+	move $a1, $s0
 	jal playerMove
 	
-	#Render array
+	#Render board
 	la $a0, game_arr
 	move $a1, $s1
 	jal update_board
-    	
+	
     	#Main loop iterates 10 times, with 2 turns per loop,
     	#so 20 turns total and 1 space left for the hole
-    	beq $s0, 9, main_exit
+    	beq $s0, 10, main_exit
+    	
+    	#Increment turn by 1
     	addi $s0, $s0, 1
     	j main_loop
 
 main_exit:
-
+    	
 	#Get hole pos
 	la $a0, game_arr
 	move $a1, $s1
