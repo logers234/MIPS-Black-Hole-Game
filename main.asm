@@ -39,8 +39,8 @@ main:
 	la $a0, loading_message
 	syscall
 	
-	#Fill board with white pixels and draw background
-	#jal fill_board
+	#Draw background
+	jal fill_board
     	jal draw_board
     	
     	#Notify user that board is finished being drawn
